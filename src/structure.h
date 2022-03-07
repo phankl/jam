@@ -24,7 +24,8 @@ class Structure{
   public:
    
     Structure(int, int, double, double, XYZ, XYZ, XYZ);
-
+    
+    void segment(int, string);
     vector<double> odf(int);
     
   private:
@@ -40,7 +41,7 @@ class Structure{
 
     vector<Tube> tubes;
     vector<Tube> ghostTubes;
-     
+    
     double distance(Tube, Tube, double, double);
     bool checkOverlap(Tube);
 

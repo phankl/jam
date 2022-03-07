@@ -11,6 +11,15 @@ Structure::Structure(int seed, int nTubeNew, double rTubeNew, double lTubeNew, X
   generate(seed);
 }
 
+void Structure::segment(int nSegment, string fileName) {
+  ofstream file(fileName); 
+  
+  for (int i = 0; i < nTube; i++) {
+    Tube tube = tubes[i];
+    XYZ t = tube.t;
+    XYZ s = tube.s;
+  }
+}
 
 vector<double> Structure::odf(int nBins) {
   
