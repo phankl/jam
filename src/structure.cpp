@@ -1,6 +1,6 @@
 #include "structure.h"
 
-Structure::Structure(int seed, int nTubeNew, double rTubeNew, double lTubeNew, XYZ boxSizeNew, XYZ meanNew, XYZ stdNew):
+Structure::Structure(int seed, int nTubeNew, int nSegment, double rTubeNew, double lTubeNew, XYZ boxSizeNew, XYZ meanNew, XYZ stdNew):
   nTube(nTubeNew),
   rTube(rTubeNew),
   lTube(lTubeNew),
@@ -9,16 +9,41 @@ Structure::Structure(int seed, int nTubeNew, double rTubeNew, double lTubeNew, X
   std(stdNew)
 {
   generate(seed);
+  segment(nSegment);
 }
 
-void Structure::segment(int nSegment, string fileName) {
-  ofstream file(fileName); 
+void Structure::printDataFile(string fileName) {
+  ofstream file(fileName);
+
+  // write file header
   
-  for (int i = 0; i < nTube; i++) {
-    Tube tube = tubes[i];
-    XYZ t = tube.t;
-    XYZ s = tube.s;
+  file << "LAMMPS CNT Data File\n\n";
+  
+  file << "\t" << atoms.size() << " atoms\n";
+  file << "\t0 bonds\n";
+  file << "\t0 angles\n";
+  file << "\t0 dihedrals\n";
+  file << "\t0 impropers\n\n";
+  
+  file << "\t1 atom types\n";
+  file << "\t0 " << boxSize.x << " xlo xhi\n";
+  file << "\t0 " << boxSize.y << " ylo yhi\n";
+  file << "\t0 " << boxSize.z << " zlo zhi\n\n";
+
+  file << "Masses\n\n";
+
+  file << "\t1 " << mass << "\n\n";
+
+  // write atom data
+
+  file << "Atoms\n\n";
+
+  for (int i = 0; i < atoms.size(); i++) {
+    file << i+1 << " " << i % (nSegment + 1) + 1;
+    file << " 1 0 " << atoms[i].x << " " << atoms[i].y << " " << atoms[j].z << "\n";
   }
+
+  file.close();
 }
 
 vector<double> Structure::odf(int nBins) {
@@ -255,5 +280,20 @@ void Structure::generate(int seed) {
 
       if (ghost) ghostTubes.push_back(Tube(rTube, lTube, sTemp, t));
     }
+  }
+}
+
+void Structure::segment(int nSegment) {
+  atoms = vector<XYZ>((nSegment+1)*nTube, XYZ());
+  int index = 0;
+  
+  for (int i = 0; i < nTube; i++) {
+    Tube tube = tubes[i];
+    double lSegment = tube.l / nSegment;
+    XYZ delta = lSegment * tube.t;
+    
+    atoms[index++] = tube.s;
+    for (int j = 0; j < nSegment; j++)
+      atoms[index++] = atoms[index] + delta;
   }
 }

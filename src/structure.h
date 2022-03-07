@@ -23,11 +23,11 @@ class Structure{
   
   public:
    
-    Structure(int, int, double, double, XYZ, XYZ, XYZ);
+    Structure(int, int, int, double, double, XYZ, XYZ, XYZ);
     
-    void segment(int, string);
     vector<double> odf(int);
-    
+    void printDataFile(string);
+
   private:
 
     int nTube;
@@ -41,11 +41,14 @@ class Structure{
 
     vector<Tube> tubes;
     vector<Tube> ghostTubes;
+
+    vector<XYZ> atoms;
     
     double distance(Tube, Tube, double, double);
     bool checkOverlap(Tube);
 
     void generate(int);
+    void segment(int);
 };
 
 #endif
