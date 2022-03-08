@@ -35,14 +35,14 @@ int main() {
   int nTube = volumeFraction * pow(boxLength, 3) / (numbers::pi * pow(rTube, 2) * lTube);
   
   double linearDensity = 2.0 / 3.0 * sqrt(n*n + n*m + m*m) * mC / aCC;
-  double segmentMass = linearDensity * lTube / nSegment;
+  double mTube = linearDensity * lTube;
 
   double cutoff = 1.1 * lTube / nSegment;
   
   cout << "Generating structure with " << nTube << " CNTs at volume fraction of " << 100*volumeFraction << "%." << endl;
 
-  Structure structure(seed, nTube, nSegment, rTube, lTube, boxSize, mean, std);
-  structure.printDataFile(segmentMass, "cnt.data");
+  Structure structure(seed, nTube, nSegment, rTube, lTube, mTube, boxSize, mean, std);
+  structure.printDataFile("cnt.data");
   structure.printInputFile(cutoff, cutoff, "cnt.in");
 
   return 0;

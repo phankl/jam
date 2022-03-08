@@ -16,6 +16,12 @@ struct XYZ {
     
     double length();
     void normalise();
+
+    double& operator [] (int i) {
+      if (i == 0) return x;
+      else if (i == 1) return y;
+      else return z;
+    };
 };
 
 XYZ operator + (const XYZ&, const XYZ&);

@@ -1,19 +1,23 @@
 #include "structure.h"
 
-Structure::Structure(int seed, int nTubeNew, int nSegmentNew, double rTubeNew, double lTubeNew, XYZ boxSizeNew, XYZ meanNew, XYZ stdNew):
+Structure::Structure(int seed, int nTubeNew, int nSegmentNew, double rTubeNew, double lTubeNew, double mTubeNew, XYZ boxSizeNew, XYZ meanNew, XYZ stdNew):
   nTube(nTubeNew),
   nSegment(nSegmentNew),
   rTube(rTubeNew),
   lTube(lTubeNew),
+  mTube(mTubeNew),
   boxSize(boxSizeNew),
   mean(meanNew),
   std(stdNew)
 {
   generate(seed);
   segment(nSegment);
+  mAtom = mTube / (nSegment+1);
+  calculateInertia();
+  calculateCOMs();
 }
 
-void Structure::printDataFile(double mass, string fileName) {
+void Structure::printDataFile(string fileName) {
   ofstream file(fileName);
 
   // write file header
@@ -34,7 +38,7 @@ void Structure::printDataFile(double mass, string fileName) {
 
   file << "Masses\n\n";
 
-  file << "\t1 " << mass << "\n\n";
+  file << "\t1 " << mAtom << "\n\n";
 
   // write atom data
 
@@ -351,4 +355,65 @@ void Structure::segment(int nSegment) {
     for (int j = 0; j < nSegment; j++)
       atoms[index++] = tube.s + (j+1)*delta;
   }
+}
+
+void Structure::calculateInertia() {
+
+  inertiaTensors = vector<vector<vector<double>>>(nTube, vector<vector<double>>(3, vector<double>(3, 0)));
+
+  // define inertia tensor of tube in principal coordinate system
+
+  vector<vector<double>> inertia(3, vector<double>(3, 0.0));
+  inertia[0][0] = mTube * (6.0*rTube*rTube + lTube*lTube);
+  inertia[1][1] = inertia[0][0];
+  inertia[2][2] = mTube * rTube * rTube;
+
+  vector<vector<double>> rotation(3, vector<double>(3, 0.0));
+
+  for (int i = 0; i < nTube; i++) {
+    XYZ t = tubes[i].t;
+
+    // angle between t and z axis
+
+    double theta = acos(t.z);
+    double c = pow(cos(0.5*theta), 2);
+    double s = pow(sin(0.5*theta), 2);
+
+    // axis of rotation
+
+    XYZ u(t.y, -t.z, 0.0);
+
+    // construct rotation matrix
+
+    for (int j = 0; j < 3; j++)
+      for (int k = 0; k < 3; k++) {
+        if (j == k)
+          rotation[j][k] = c + s*(2*u[j]*u[j] - 1);
+        else {
+          rotation[j][k] = 2 * u[j] * u[k] * s;
+          for (int l = 0; l < 3; l++) {
+            vector<int> ind({j, k, l});
+            if (ind == vector<int>({0, 1, 2}) || ind == vector<int>({2, 0, 1}) || ind == vector<int>({1, 2, 0}))
+              rotation[j][k] += u[l] * sin(theta);
+            else if (ind == vector<int>({1, 0, 2}) || ind == vector<int>({2, 1, 0}) || ind == vector<int>({0, 2, 1}))
+              rotation[j][k] -= u[l] * sin(theta);
+          }
+        }
+      }
+  
+    // rotate inertia tensor
+
+    for (int j = 0; j < 3; j++)
+      for (int k = 0; k < 3; k++)
+        for (int l = 0; l < 3; l++)
+          for (int m = 0; m < 3; m++)
+            inertiaTensors[i][j][k] += rotation[l][j] * inertia[l][m] * rotation[m][k];
+  }
+}
+
+void Structure::calculateCOMs() {
+  coms = vector<XYZ>(nTube, XYZ());
+
+  for (int i = 0; i < nTube; i++)
+    coms[i] = tubes[i].s + 0.5*lTube*tubes[i].t;
 }
