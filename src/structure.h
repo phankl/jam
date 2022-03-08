@@ -10,27 +10,26 @@
 #include <string>
 #include <numbers>
 
-#include <complex>
-#include <fftw3.h>
-
-#include "analysis.h"
 #include "tube.h"
 #include "xyz.h"
 
 using namespace std;
 
-class Structure{
+class Structure {
   
   public:
    
     Structure(int, int, int, double, double, XYZ, XYZ, XYZ);
     
     vector<double> odf(int);
-    void printDataFile(string);
+
+    void printDataFile(double, string);
+    void printInputFile(double, double, string);
 
   private:
 
     int nTube;
+    int nSegment;
     double rTube;
     double lTube;
 

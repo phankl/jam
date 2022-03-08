@@ -1,7 +1,8 @@
 #include "structure.h"
 
-Structure::Structure(int seed, int nTubeNew, int nSegment, double rTubeNew, double lTubeNew, XYZ boxSizeNew, XYZ meanNew, XYZ stdNew):
+Structure::Structure(int seed, int nTubeNew, int nSegmentNew, double rTubeNew, double lTubeNew, XYZ boxSizeNew, XYZ meanNew, XYZ stdNew):
   nTube(nTubeNew),
+  nSegment(nSegmentNew),
   rTube(rTubeNew),
   lTube(lTubeNew),
   boxSize(boxSizeNew),
@@ -12,7 +13,7 @@ Structure::Structure(int seed, int nTubeNew, int nSegment, double rTubeNew, doub
   segment(nSegment);
 }
 
-void Structure::printDataFile(string fileName) {
+void Structure::printDataFile(double mass, string fileName) {
   ofstream file(fileName);
 
   // write file header
@@ -20,12 +21,13 @@ void Structure::printDataFile(string fileName) {
   file << "LAMMPS CNT Data File\n\n";
   
   file << "\t" << atoms.size() << " atoms\n";
-  file << "\t0 bonds\n";
+  file << "\t" << nSegment*nTube << " bonds\n";
   file << "\t0 angles\n";
   file << "\t0 dihedrals\n";
   file << "\t0 impropers\n\n";
   
   file << "\t1 atom types\n";
+  file << "\t1 bond types\n";
   file << "\t0 " << boxSize.x << " xlo xhi\n";
   file << "\t0 " << boxSize.y << " ylo yhi\n";
   file << "\t0 " << boxSize.z << " zlo zhi\n\n";
@@ -39,9 +41,63 @@ void Structure::printDataFile(string fileName) {
   file << "Atoms\n\n";
 
   for (int i = 0; i < atoms.size(); i++) {
-    file << i+1 << " " << i % (nSegment + 1) + 1;
-    file << " 1 0 " << atoms[i].x << " " << atoms[i].y << " " << atoms[j].z << "\n";
+    file << i+1 << " " << i / (nSegment + 1) + 1;
+    file << " 1 0 " << atoms[i].x << " " << atoms[i].y << " " << atoms[i].z << "\n";
   }
+
+  // write bond data
+
+  file << "\nBonds\n\n";
+
+  int index = 1;
+  for (int i = 0; i < atoms.size(); i++) {
+    if (i % (nSegment+1) == 0) continue;
+    file << index++ << " 1 " << i << " " << i+1 << "\n"; 
+  }
+
+  file.close();
+}
+
+void Structure::printInputFile(double neighCutoff, double commCutoff, string fileName) {
+  ofstream file(fileName);
+
+  string tab = "\t\t\t";
+
+  // general simulation setup
+
+  file << "#Initialisation\n\n";
+
+  file << "units" << tab << "metal\n";
+  file << "dimension" << tab << "3\n";
+  file << "boundary" << tab << "p p p\n";
+  file << "atom_style" << tab << "full\n";
+  file << "comm_modify" << tab << "cutoff " << commCutoff << "\n";
+  file << "neighbor" << tab << neighCutoff << " bin\n";
+  file << "neigh_modify" << tab << "every 5 delay 0 check yes\n";
+  file << "newton" << tab << "on\n\n";
+  
+  file << "#Read data\n\n";
+  
+  file << "read_data" << tab << "cnt.data\n\n";
+
+  file << "#Force field\n\n";
+
+  file << "bond_style zero\n";
+  file << "bond_coeff *\n";
+  file << "pair_style" << tab << "mesocnt\n";
+  file << "pair_coeff" << tab << "* * C_10_10.mesocnt\n\n";
+
+  file << "#Output\n\n";
+
+  file << "thermo" << tab << "10\n";
+  file << "dump" << tab << "xyz all xyz 100 cnt.xyz\n";
+
+  file << "#Simulation setup\n\n";
+
+  file << "velocity" << tab << "all create 600.0 2022\n";
+  file << "timestep" << tab << "1.0e-2\n";
+  file << "fix rigid all rigid molecule temp 600 600 100\n";
+  file << "run" << tab << "10000\n";
 
   file.close();
 }
@@ -67,7 +123,6 @@ vector<double> Structure::odf(int nBins) {
 
   return result;
 }
-
 
 double Structure::distance(Tube tube1, Tube tube2, double lambda1, double lambda2) {
   return (tube1.s - tube2.s + lambda1*tube1.t - lambda2*tube2.t).length();
@@ -240,7 +295,7 @@ void Structure::generate(int seed) {
 
     if (!checkOverlap(tube) && !ghostOverlap) {
       
-      // cout << "Tube " << tubeIndex << " generated after " << attempts << " attempts." << endl;
+      cout << "Tube " << tubeIndex << "/" << nTube << " generated after " << attempts << " attempts." << endl;
       attempts = 0;
       tubes.push_back(tube);
       ghostTubes.push_back(tube);
@@ -294,6 +349,6 @@ void Structure::segment(int nSegment) {
     
     atoms[index++] = tube.s;
     for (int j = 0; j < nSegment; j++)
-      atoms[index++] = atoms[index] + delta;
+      atoms[index++] = tube.s + (j+1)*delta;
   }
 }
