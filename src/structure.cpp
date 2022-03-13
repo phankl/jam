@@ -62,6 +62,27 @@ void Structure::printDataFile(string fileName) {
   file.close();
 }
 
+void Structure::printInertiaFile(string fileName) {
+  ofstream file(fileName);
+
+  file << nTube << "\n";
+
+  for (int i = 0; i < nTube; i++) {
+    // id, mass, com
+    file << i+1 << " " << mTube << " " << coms[i].x << " " << coms[i].y << " " << coms[i].z << " ";
+    // inertia diagonal
+    file << inertiaTensors[i][0][0] << " " << inertiaTensors[i][1][1] << " " << inertiaTensors[i][2][2] << " ";
+    // inertia off-diagonal
+    file << inertiaTensors[i][0][1] << " " << inertiaTensors[i][0][2] << " " << inertiaTensors[i][1][2] << " ";
+    // velocity, angular momemtum 
+    file << "0 0 0 0 0 0 ";
+    // image
+    file << "0 0 0\n";
+  }
+
+  file.close();
+}
+
 void Structure::printInputFile(double neighCutoff, double commCutoff, string fileName) {
   ofstream file(fileName);
 
@@ -94,13 +115,14 @@ void Structure::printInputFile(double neighCutoff, double commCutoff, string fil
   file << "#Output\n\n";
 
   file << "thermo" << tab << "10\n";
-  file << "dump" << tab << "xyz all xyz 100 cnt.xyz\n";
+  file << "dump" << tab << "custom all custom 100 cnt.lmp mol x y z mol\n";
+  file << "dump_modify" << tab << "custom sort id\n";
 
   file << "#Simulation setup\n\n";
 
   file << "velocity" << tab << "all create 600.0 2022\n";
   file << "timestep" << tab << "1.0e-2\n";
-  file << "fix rigid all rigid molecule temp 600 600 100\n";
+  file << "fix rigid all rigid/nvt molecule temp 600 600 100 infile cnt.inertia reinit no\n";
   file << "run" << tab << "10000\n";
 
   file.close();
@@ -251,11 +273,21 @@ void Structure::generate(int seed) {
     double tZ = tDistributionZ(generator);
  
     if (sDistribution(generator) < 0.5) tZ *= -1.0;
-
+    
     XYZ s(sX, sY, sZ);
     XYZ t(tX, tY, tZ);
 
     t.normalise();
+    
+    // move centre of mass inside simulation box
+
+    XYZ com = s + 0.5*lTube*t;
+    if (com.x > boxSize.x) s.x -= boxSize.x;
+    else if (com.x < 0) s.x += boxSize.x;
+    if (com.y > boxSize.y) s.y -= boxSize.y;
+    else if (com.y < 0) s.y += boxSize.y;
+    if (com.z > boxSize.z) s.z -= boxSize.z;
+    else if (com.z < 0) s.z += boxSize.z;
 
     Tube tube(rTube, lTube, s, t);
     
@@ -364,7 +396,7 @@ void Structure::calculateInertia() {
   // define inertia tensor of tube in principal coordinate system
 
   vector<vector<double>> inertia(3, vector<double>(3, 0.0));
-  inertia[0][0] = mTube * (6.0*rTube*rTube + lTube*lTube);
+  inertia[0][0] = mTube * (6.0*rTube*rTube + lTube*lTube) / 12.0;
   inertia[1][1] = inertia[0][0];
   inertia[2][2] = mTube * rTube * rTube;
 
@@ -381,7 +413,8 @@ void Structure::calculateInertia() {
 
     // axis of rotation
 
-    XYZ u(t.y, -t.z, 0.0);
+    XYZ u(-t.y, t.x, 0.0);
+    u.normalise();
 
     // construct rotation matrix
 
@@ -394,20 +427,20 @@ void Structure::calculateInertia() {
           for (int l = 0; l < 3; l++) {
             vector<int> ind({j, k, l});
             if (ind == vector<int>({0, 1, 2}) || ind == vector<int>({2, 0, 1}) || ind == vector<int>({1, 2, 0}))
-              rotation[j][k] += u[l] * sin(theta);
-            else if (ind == vector<int>({1, 0, 2}) || ind == vector<int>({2, 1, 0}) || ind == vector<int>({0, 2, 1}))
               rotation[j][k] -= u[l] * sin(theta);
+            else if (ind == vector<int>({1, 0, 2}) || ind == vector<int>({2, 1, 0}) || ind == vector<int>({0, 2, 1}))
+              rotation[j][k] += u[l] * sin(theta);
           }
         }
       }
-  
+ 
     // rotate inertia tensor
 
     for (int j = 0; j < 3; j++)
       for (int k = 0; k < 3; k++)
         for (int l = 0; l < 3; l++)
           for (int m = 0; m < 3; m++)
-            inertiaTensors[i][j][k] += rotation[l][j] * inertia[l][m] * rotation[m][k];
+            inertiaTensors[i][j][k] += rotation[j][l] * inertia[l][m] * rotation[k][m];
   }
 }
 
