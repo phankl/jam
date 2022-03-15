@@ -24,6 +24,7 @@ class Structure {
     vector<double> odf(int);
 
     void printDataFile(string);
+    void printInertiaFile(string);
     void printInputFile(double, double, string);
 
   private:

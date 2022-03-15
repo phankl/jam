@@ -14,7 +14,7 @@ int main() {
   // structure properties
 
   double boxLength = 5000.0;
-  double volumeFraction = 0.001;
+  double volumeFraction = 0.005;
 
   int seed = 2022;
   int nSegment = 10;
@@ -31,8 +31,8 @@ int main() {
   int m = 10;
   double lTube = 1000.0;
   
-  double skin = 5;
-  double rTube = 0.5 * sqrt(3.0*(n*n + n*m + m*m)) / numbers::pi * aCC; + skin;
+  double skin = 1.5;
+  double rTube = 0.5 * sqrt(3.0*(n*n + n*m + m*m)) / numbers::pi * aCC;
   int nTube = volumeFraction * pow(boxLength, 3) / (numbers::pi * pow(rTube, 2) * lTube);
   
   double linearDensity = 2.0 / 3.0 * sqrt(n*n + n*m + m*m) * mC / aCC;
@@ -42,7 +42,7 @@ int main() {
   
   cout << "Generating structure with " << nTube << " CNTs at volume fraction of " << 100*volumeFraction << "%." << endl;
 
-  Structure structure(seed, nTube, nSegment, rTube, lTube, mTube, boxSize, mean, std);
+  Structure structure(seed, nTube, nSegment, rTube+skin, lTube, mTube, boxSize, mean, std);
   structure.printDataFile("cnt.data");
   structure.printInertiaFile("cnt.inertia");
   // structure.printInputFile(cutoff, cutoff, "cnt.in");

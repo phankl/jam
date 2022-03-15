@@ -279,16 +279,6 @@ void Structure::generate(int seed) {
 
     t.normalise();
     
-    // move centre of mass inside simulation box
-
-    XYZ com = s + 0.5*lTube*t;
-    if (com.x > boxSize.x) s.x -= boxSize.x;
-    else if (com.x < 0) s.x += boxSize.x;
-    if (com.y > boxSize.y) s.y -= boxSize.y;
-    else if (com.y < 0) s.y += boxSize.y;
-    if (com.z > boxSize.z) s.z -= boxSize.z;
-    else if (com.z < 0) s.z += boxSize.z;
-
     Tube tube(rTube, lTube, s, t);
     
     // check periodic boundary conditions and create secondary ghost tube for trial
