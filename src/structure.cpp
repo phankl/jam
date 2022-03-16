@@ -281,85 +281,55 @@ void Structure::generate(int seed) {
     
     Tube tube(rTube, lTube, s, t);
     
-    // check periodic boundary conditions and create secondary ghost tube for trial
+    // check periodic boundary conditions and create image tubes if necessary
 
-    XYZ eTemp = s + lTube*t;
+    XYZ e = s + lTube*t;
     XYZ sTemp = s;
-    
-    bool ghost = false;
 
-    if (eTemp.x < 0.0) {
-      sTemp.x += boxSize.x;
-      ghost = true;
-    }
-    if (eTemp.y < 0.0) {
-      sTemp.y += boxSize.y; 
-      ghost = true;
-    }
-    if (eTemp.z < 0.0) {
-      sTemp.z += boxSize.z; 
-      ghost = true;
-    }
-    if (eTemp.x > boxSize.x) {
-      sTemp.x -= boxSize.x;
-      ghost = true;
-    }
-    if (eTemp.y > boxSize.y) {
-      sTemp.y -= boxSize.y;
-      ghost = true;
-    }
-    if (eTemp.z > boxSize.z) {
-      sTemp.z -= boxSize.z;
-      ghost = true;
+    // image flags
+
+    vector<int> ixs(1, 0);
+    vector<int> iys(1, 0);
+    vector<int> izs(1, 0);
+
+    if (e.x < 0.0) ixs = {0, 1};
+    else if (e.x > boxSize.x) ixs = {0, -1};
+    if (e.y < 0.0) iys = {0, 1};
+    else if (e.y > boxSize.y) iys = {0, -1};
+    if (e.z < 0.0) izs = {0, 1};
+    else if (e.z > boxSize.z) izs = {0, -1};
+
+    // generate ghost tubes
+
+    vector<Tube> ghosts;
+    for (auto ix: ixs) {
+      sTemp.x = s.x + ix*boxSize.x;
+      for (auto iy: iys) {
+        sTemp.y = s.y + iy*boxSize.y;
+        for (auto iz: izs) {
+          sTemp.z = s.z + iz*boxSize.z;
+          ghosts.push_back(Tube(rTube, lTube, sTemp, t));
+        }
+      }  
     }
 
     attempts++;
 
     // add new tube if no overlap is detected
 
-    bool ghostOverlap = (ghost) ? checkOverlap(Tube(rTube, lTube, sTemp, t)) : false;
+    bool overlap = false;
+    for (auto ghost: ghosts) {
+      overlap = checkOverlap(ghost);
+      if (overlap) break;
+    }
 
-    if (!checkOverlap(tube) && !ghostOverlap) {
-      
+    if (!overlap) {
       cout << "Tube " << tubeIndex << "/" << nTube << " generated after " << attempts << " attempts." << endl;
       attempts = 0;
       tubes.push_back(tube);
-      ghostTubes.push_back(tube);
+      for (auto ghost: ghosts)
+        ghostTubes.push_back(ghost);
       tubeIndex++;
-
-      // check periodic boundary conditions and add ghost tube if boundary is crossed
-      
-      XYZ eTemp = s + lTube*t;
-      XYZ sTemp = s;
-      
-      bool ghost = false;
-
-      if (eTemp.x < 0.0) {
-        sTemp.x += boxSize.x;
-        ghost = true;
-      }
-      if (eTemp.y < 0.0) {
-        sTemp.y += boxSize.y; 
-        ghost = true;
-      }
-      if (eTemp.z < 0.0) {
-        sTemp.z += boxSize.z; 
-        ghost = true;
-      }
-      if (eTemp.x > boxSize.x) {
-        sTemp.x -= boxSize.x;
-        ghost = true;
-      }
-      if (eTemp.y > boxSize.y) {
-        sTemp.y -= boxSize.y;
-        ghost = true;
-      }
-      if (eTemp.z > boxSize.z) {
-        sTemp.z -= boxSize.z;
-        ghost = true;
-      }
-
-      if (ghost) ghostTubes.push_back(Tube(rTube, lTube, sTemp, t));
     }
   }
 }

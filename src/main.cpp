@@ -14,10 +14,10 @@ int main() {
   // structure properties
 
   double boxLength = 5000.0;
-  double volumeFraction = 0.005;
+  double volumeFraction = 0.01;
 
-  int seed = 2022;
-  int nSegment = 10;
+  int seed = 2021;
+  int nSegment = 50;
   XYZ boxSize(boxLength, boxLength, boxLength);
   XYZ mean(0.0, 0.0, 5.0);
   XYZ std(1, 1, 1);
@@ -31,7 +31,7 @@ int main() {
   int m = 10;
   double lTube = 1000.0;
   
-  double skin = 1.5;
+  double skin = 1.0;
   double rTube = 0.5 * sqrt(3.0*(n*n + n*m + m*m)) / numbers::pi * aCC;
   int nTube = volumeFraction * pow(boxLength, 3) / (numbers::pi * pow(rTube, 2) * lTube);
   

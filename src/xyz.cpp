@@ -14,38 +14,6 @@ XYZ::XYZ(double xNew, double yNew, double zNew) :
 {
 }
 
-void XYZ::normalise()
-{
-  double length = sqrt(x*x + y*y + z*z);
-  x /= length;
-  y /= length;
-  z /= length;
-}
-
-double XYZ::length()
-{
-  return sqrt(x*x + y*y + z*z);
-}
-
-XYZ operator + (const XYZ& a, const XYZ& b) {
-  return XYZ(a.x + b.x,a.y + b.y,a.z + b.z);
-}
-
-XYZ operator - (const XYZ& a, const XYZ& b) {
-  return XYZ(a.x - b.x,a.y - b.y,a.z - b.z);
-}
-
-XYZ operator * (double a, const XYZ& b) {
-  return XYZ(a*b.x,a*b.y,a*b.z);
-}
-
-double operator * (const XYZ& a, const XYZ& b) {
-  return a.x*b.x + a.y*b.y + a.z*b.z;
-}
-
-XYZ cross(const XYZ& a, const XYZ& b) {
-  return XYZ(a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x);
-}
 
 XYZ rotate(const XYZ& r, const XYZ& n, double theta) {
   double c = cos(theta);
