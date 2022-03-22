@@ -131,7 +131,8 @@ void Structure::printInputFile(double neighCutoff, double commCutoff, string fil
 vector<double> Structure::odf(int nBins) {
   
   vector<double> result(nBins, 0.0);
-  double binSize = numbers::pi / nBins;
+  double pi = 4 * atan(1);
+  double binSize = pi / nBins;
 
   for (int i = 0; i < nTube; i++) {
     XYZ t = tubes[i].t;

@@ -2,7 +2,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <numbers>
 
 #include "structure.h"
 #include "xyz.h"
@@ -10,6 +9,8 @@
 using namespace std;
 
 int main() {
+
+  double pi = 4 * atan(1);
  
   // structure properties
 
@@ -32,8 +33,8 @@ int main() {
   double lTube = 1000.0;
   
   double skin = 1.0;
-  double rTube = 0.5 * sqrt(3.0*(n*n + n*m + m*m)) / numbers::pi * aCC;
-  int nTube = volumeFraction * pow(boxLength, 3) / (numbers::pi * pow(rTube, 2) * lTube);
+  double rTube = 0.5 * sqrt(3.0*(n*n + n*m + m*m)) / pi * aCC;
+  int nTube = volumeFraction * pow(boxLength, 3) / (pi * pow(rTube, 2) * lTube);
   
   double linearDensity = 2.0 / 3.0 * sqrt(n*n + n*m + m*m) * mC / aCC;
   double mTube = linearDensity * lTube;
