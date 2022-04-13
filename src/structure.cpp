@@ -182,12 +182,12 @@ void Structure::generate(int seed) {
     vector<int> iys(1, 0);
     vector<int> izs(1, 0);
 
-    if (e.x < 0.0) ixs = {0, 1};
-    else if (e.x > boxSize.x) ixs = {0, -1};
-    if (e.y < 0.0) iys = {0, 1};
-    else if (e.y > boxSize.y) iys = {0, -1};
-    if (e.z < 0.0) izs = {0, 1};
-    else if (e.z > boxSize.z) izs = {0, -1};
+    if (e.x < rTube+skin) ixs = {0, 1};
+    else if (e.x > boxSize.x-rTube-skin) ixs = {0, -1};
+    if (e.y < rTube+skin) iys = {0, 1};
+    else if (e.y > boxSize.y-rTube-skin) iys = {0, -1};
+    if (e.z < rTube+skin) izs = {0, 1};
+    else if (e.z > boxSize.z-rTube-skin) izs = {0, -1};
 
     // generate ghost tubes
 

@@ -101,7 +101,9 @@ void StructureElastic::printInputFile(int steps, double temp, string fileName) {
   file << "#Output\n\n";
 
   file << "thermo 100\n";
-  file << "dump custom all custom 1000 cnt.lmp mol x y z mol\n";
+  // file << "compute ebond all pe bond\n";
+  file << "compute epair all pe/atom pair\n";
+  file << "dump custom all custom 1000 cnt.lmp mol x y z c_epair\n";
   file << "dump_modify custom sort id\n\n";
 
   file << "#Simulation setup\n\n";
