@@ -3,7 +3,8 @@
 #include <fstream>
 #include <vector>
 
-#include "structure.h"
+#include "structure_rigid.h"
+#include "structure_elastic.h"
 #include "xyz.h"
 
 using namespace std;
@@ -14,14 +15,13 @@ int main() {
  
   // structure properties
 
-  double boxLength = 5000.0;
-  double volumeFraction = 0.01;
+  double boxLength = 2000.0;
+  double volumeFraction = 0.10;
 
   int seed = 2021;
-  int nSegment = 50;
   XYZ boxSize(boxLength, boxLength, boxLength);
   XYZ mean(0.0, 0.0, 5.0);
-  XYZ std(1, 1, 1);
+  XYZ std(0.1, 0.1, 0.1);
 
   // CNT properties
   
@@ -30,23 +30,26 @@ int main() {
 
   int n = 10;
   int m = 10;
+  int nSegment = 100;
   double lTube = 1000.0;
   
-  double skin = 1.0;
   double rTube = 0.5 * sqrt(3.0*(n*n + n*m + m*m)) / pi * aCC;
   int nTube = volumeFraction * pow(boxLength, 3) / (pi * pow(rTube, 2) * lTube);
   
   double linearDensity = 2.0 / 3.0 * sqrt(n*n + n*m + m*m) * mC / aCC;
   double mTube = linearDensity * lTube;
-
-  double cutoff = 3.5 * lTube / nSegment;
+ 
+  // simulation properties
   
+  int steps = 1000000;
+  double temp = 600.0;
+
   cout << "Generating structure with " << nTube << " CNTs at volume fraction of " << 100*volumeFraction << "%." << endl;
 
-  Structure structure(seed, nTube, nSegment, rTube+skin, lTube, mTube, boxSize, mean, std);
+  StructureElastic structure(seed, nTube, nSegment, rTube, lTube, mTube, boxSize, mean, std);
   structure.printDataFile("cnt.data");
-  structure.printInertiaFile("cnt.inertia");
-  // structure.printInputFile(cutoff, cutoff, "cnt.in");
+  // structure.printInertiaFile("cnt.inertia");
+  structure.printInputFile(steps, temp, "cnt.in");
 
   return 0;
 }

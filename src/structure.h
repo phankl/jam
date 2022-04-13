@@ -22,11 +22,10 @@ class Structure {
     
     vector<double> odf(int);
 
-    void printDataFile(string);
-    void printInertiaFile(string);
-    void printInputFile(double, double, string);
+    virtual void printDataFile(string) = 0;
+    virtual void printInputFile(int, double, string) = 0;
 
-  private:
+  protected:
 
     int nTube;
     int nSegment;
@@ -34,6 +33,7 @@ class Structure {
     double lTube;
     double mTube;
     double mAtom;
+    double lSegment;
 
     XYZ boxSize;
 
@@ -44,16 +44,12 @@ class Structure {
     vector<Tube> ghostTubes;
 
     vector<XYZ> atoms;
-    vector<vector<vector<double>>> inertiaTensors;
-    vector<XYZ> coms;
     
     double distance(Tube, Tube, double, double);
     bool checkOverlap(Tube);
 
     void generate(int);
     void segment(int);
-    void calculateInertia();
-    void calculateCOMs();
 };
 
 #endif

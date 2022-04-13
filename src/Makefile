@@ -1,7 +1,7 @@
 #Generic c++ Makefile
 
 CXX = g++
-CXXFLAGS = -O3 -g -fopenmp
+CXXFLAGS = -O3 -g -fopenmp -std=c++11
 LINKS = 
 
 MAIN = cntGenerate
