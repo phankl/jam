@@ -1,11 +1,12 @@
 #include "structure.h"
 
-Structure::Structure(int seed, int nTube, int nSegment, double rTube, double lTube, double mTube, XYZ boxSize, XYZ mean, XYZ std): 
+Structure::Structure(int seed, int nTube, int nSegment, double rTube, double lTube, double mTube, double skin, XYZ boxSize, XYZ mean, XYZ std): 
   nTube(nTube),
   nSegment(nSegment),
   rTube(rTube),
   lTube(lTube),
   mTube(mTube),
+  skin(skin),
   mAtom(mTube / nSegment),
   lSegment(lTube / nSegment),
   boxSize(boxSize),
@@ -70,7 +71,7 @@ bool Structure::checkOverlap(Tube tube1) {
 
     double d = fabs(delta * n);
 
-    if (d > r1+r2) continue;
+    if (d > r1+r2+skin) continue;
 
     // check if minimum distance is within line segments
 
@@ -81,7 +82,7 @@ bool Structure::checkOverlap(Tube tube1) {
     double lambda2 = (c*t1 - t2) * delta * frac;
  
     if (lambda1 >= 0.0 && lambda1 <= l1 && lambda2 >= 0.0 && lambda2 <= l2) {
-      if (d < r1+r2) return true;
+      if (d < r1+r2+skin) return true;
       else continue;
     }
 
@@ -93,44 +94,44 @@ bool Structure::checkOverlap(Tube tube1) {
     lambda1 = 0.0;
     lambda2 = -(delta * t2);
     d = distance(tube1, tube2, lambda1, lambda2);
-    if (lambda2 >= 0.0 && lambda2 <= l2 && d < r1+r2) return true;
+    if (lambda2 >= 0.0 && lambda2 <= l2 && d < r1+r2+skin) return true;
 
     lambda1 = l1;
     lambda2 = c*l1 - delta*t2;
     d = distance(tube1, tube2, lambda1, lambda2);
-    if (lambda2 >= 0.0 && lambda2 <= l2 && d < r1+r2) return true;
+    if (lambda2 >= 0.0 && lambda2 <= l2 && d < r1+r2+skin) return true;
 
     lambda1 = delta * t1;
     lambda2 = 0.0;
     d = distance(tube1, tube2, lambda1, lambda2);
-    if (lambda1 >= 0.0 && lambda1 <= l1 && d < r1+r2) return true;
+    if (lambda1 >= 0.0 && lambda1 <= l1 && d < r1+r2+skin) return true;
 
     lambda1 = c*l2 + delta*t1;
     lambda2 = l2;
     d = distance(tube1, tube2, lambda1, lambda2);
-    if (lambda1 >= 0.0 && lambda1 <= l1 && d < r1+r2) return true;
+    if (lambda1 >= 0.0 && lambda1 <= l1 && d < r1+r2+skin) return true;
 
     // domain vertices
 
     lambda1 = 0.0;
     lambda2 = 0.0;
     d = distance(tube1, tube2, lambda1, lambda2);
-    if (d < r1+r2) return true;
+    if (d < r1+r2+skin) return true;
 
     lambda1 = 0.0;
     lambda2 = l2;
     d = distance(tube1, tube2, lambda1, lambda2);
-    if (d < r1+r2) return true;
+    if (d < r1+r2+skin) return true;
 
     lambda1 = l1;
     lambda2 = 0.0;
     d = distance(tube1, tube2, lambda1, lambda2);
-    if (d < r1+r2) return true;
+    if (d < r1+r2+skin) return true;
     
     lambda1 = l1;
     lambda2 = l2;
     d = distance(tube1, tube2, lambda1, lambda2);
-    if (d < r1+r2) return true;
+    if (d < r1+r2+skin) return true;
   }
 
   return false;

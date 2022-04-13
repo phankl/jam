@@ -9,7 +9,7 @@ class StructureRigid : public Structure {
 
   public:
 
-    StructureRigid(int, int, int, double, double, double, XYZ, XYZ, XYZ);
+    StructureRigid(int, int, int, double, double, double, double, XYZ, XYZ, XYZ);
 
     void printDataFile(string) override;
     void printInputFile(int, double, string) override;

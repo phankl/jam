@@ -38,6 +38,8 @@ int main() {
   
   double linearDensity = 2.0 / 3.0 * sqrt(n*n + n*m + m*m) * mC / aCC;
   double mTube = linearDensity * lTube;
+
+  double skin = 2 * aCC;
  
   // simulation properties
   
@@ -46,7 +48,7 @@ int main() {
 
   cout << "Generating structure with " << nTube << " CNTs at volume fraction of " << 100*volumeFraction << "%." << endl;
 
-  StructureElastic structure(seed, nTube, nSegment, rTube, lTube, mTube, boxSize, mean, std);
+  StructureElastic structure(seed, nTube, nSegment, rTube, lTube, mTube, skin, boxSize, mean, std);
   structure.printDataFile("cnt.data");
   // structure.printInertiaFile("cnt.inertia");
   structure.printInputFile(steps, temp, "cnt.in");

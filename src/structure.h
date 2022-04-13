@@ -18,7 +18,7 @@ class Structure {
   
   public:
    
-    Structure(int, int, int, double, double, double, XYZ, XYZ, XYZ);
+    Structure(int, int, int, double, double, double, double, XYZ, XYZ, XYZ);
     
     vector<double> odf(int);
 
@@ -34,6 +34,8 @@ class Structure {
     double mTube;
     double mAtom;
     double lSegment;
+
+    double skin;
 
     XYZ boxSize;
 

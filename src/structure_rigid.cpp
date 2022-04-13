@@ -1,7 +1,7 @@
 #include "structure_rigid.h"
 
-StructureRigid::StructureRigid(int seed, int nTube, int nSegment, double rTube, double lTube, double mTube, XYZ boxSize, XYZ mean, XYZ std):
-  Structure(seed, nTube, nSegment, rTube, lTube, mTube, boxSize, mean, std)
+StructureRigid::StructureRigid(int seed, int nTube, int nSegment, double rTube, double lTube, double mTube, double skin, XYZ boxSize, XYZ mean, XYZ std):
+  Structure(seed, nTube, nSegment, rTube, lTube, mTube, skin, boxSize, mean, std)
 {
   calculateInertia();
   calculateCOMs();

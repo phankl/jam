@@ -9,7 +9,7 @@ class StructureElastic : public Structure {
 
   public:
 
-    StructureElastic(int, int, int, double, double, double, XYZ, XYZ, XYZ);
+    StructureElastic(int, int, int, double, double, double, double, XYZ, XYZ, XYZ);
 
     void printDataFile(string) override;
     void printInputFile(int, double, string) override;
