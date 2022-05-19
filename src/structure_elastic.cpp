@@ -3,7 +3,7 @@
 StructureElastic::StructureElastic(int seed, int nTube, int nSegment, double rTube, double lTube, double mTube, double skin, XYZ boxSize, XYZ mean, XYZ std):
   Structure(seed, nTube, nSegment, rTube, lTube, mTube, skin, boxSize, mean, std),
   stiffnessBond(0.5 * (86.64 + 100.56*rTube) / lSegment),
-  stiffnessHarmonic(0.125 * 63.80 * pow(rTube, 2.93) / lSegment),
+  stiffnessHarmonic(0.5 * 63.80 * pow(rTube, 2.93) / lSegment),
   stiffnessBuckling(0.7 * 63.80 * pow(rTube, 2.93) / 275.0),
   bucklingAngle(90.0 * atan(lSegment/275.0) / atan(1))
 {
