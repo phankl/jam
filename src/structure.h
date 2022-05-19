@@ -24,9 +24,14 @@ class Structure {
 
     virtual void printDataFile(string) = 0;
     virtual void printInputFile(int, double, string) = 0;
+    
+    XYZ boxSize;
+
+    XYZ mean;
+    XYZ std;
 
   protected:
-
+    
     int nTube;
     int nSegment;
     double rTube;
@@ -37,11 +42,6 @@ class Structure {
 
     double skin;
 
-    XYZ boxSize;
-
-    XYZ mean;
-    XYZ std;
-
     vector<Tube> tubes;
     vector<Tube> ghostTubes;
 
@@ -50,7 +50,7 @@ class Structure {
     double distance(Tube, Tube, double, double);
     bool checkOverlap(Tube);
 
-    void generate(int);
+    virtual void generate(int);
     void segment(int);
 };
 
