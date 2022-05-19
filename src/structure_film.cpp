@@ -5,7 +5,7 @@ StructureFilm::StructureFilm(int seed, int nTube, int nSegment, double rTube, do
   stiffnessBond(0.5 * (86.64 + 100.56*rTube) / lSegment),
   stiffnessHarmonic(0.5 * 63.80 * pow(rTube, 2.93) / lSegment),
   stiffnessBuckling(0.7 * 63.80 * pow(rTube, 2.93) / 275.0),
-  bucklingAngle(180.0 * atan(lSegment/275.0) / atan(1))
+  bucklingAngle(45.0 * atan(lSegment/275.0) / atan(1))
 {
   this->nTube = nTube;
   generate(seed);
