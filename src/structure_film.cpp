@@ -15,6 +15,15 @@ StructureFilm::StructureFilm(int seed, int nTube, int nSegment, double rTube, do
 void StructureFilm::printDataFile(string fileName) {
   ofstream file(fileName);
 
+  // find min and max z values
+
+  double zMin = 0.0;
+  double zMax = 0.0;
+  for (int i = 0; i < atoms.size(); i++) {
+    if (atoms[i].z < zMin) zMin = atoms[i].z;
+    if (atoms[i].z > zMax) zMax = atoms[i].z;
+  }
+
   // write file header
   
   file << "LAMMPS CNT Data File\n\n";
@@ -30,7 +39,7 @@ void StructureFilm::printDataFile(string fileName) {
   file << "\t1 angle types\n";
   file << "\t0 " << boxSize.x << " xlo xhi\n";
   file << "\t0 " << boxSize.y << " ylo yhi\n";
-  file << "\t0 " << boxSize.z << " zlo zhi\n\n";
+  file << "\t" << zMin - 1.0 << " " << zMax + 1.0 << " zlo zhi\n\n";
 
   file << "Masses\n\n";
 
@@ -123,11 +132,13 @@ void StructureFilm::generate(int seed) {
 
   mt19937_64 generator(seed);
   generator.discard(10000);
+  double pi = 4 * atan(1);
+  double deg2rad = pi / 180.0;
 
   uniform_real_distribution<double> sDistribution(0.0, 1.0);
   normal_distribution<double> tDistributionX(mean.x, std.x);
   normal_distribution<double> tDistributionY(mean.y, std.y);
-  normal_distribution<double> tDistributionZ(mean.z, std.z);
+  uniform_real_distribution<double> angleDistribution(mean.z - std.z, mean.z + std.z);
 
   int attempts = 0;
   int tubeIndex = 1;
@@ -142,10 +153,10 @@ void StructureFilm::generate(int seed) {
   
     double tX = tDistributionX(generator);
     double tY = tDistributionY(generator);
-    double tZ = tDistributionZ(generator);
+
+    double angleRadians = angleDistribution(generator) * deg2rad;
+    double tZ = tan(angleRadians) * sqrt(tX*tX + tY*tY);
  
-    // if (sDistribution(generator) < 0.5) tZ *= -1.0;
-    
     XYZ s(sX, sY, sZ);
     XYZ t(tX, tY, tZ);
 

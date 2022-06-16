@@ -162,7 +162,7 @@ void Structure::generate(int seed) {
     double tY = tDistributionY(generator);
     double tZ = tDistributionZ(generator);
  
-    // if (sDistribution(generator) < 0.5) tZ *= -1.0;
+    if (sDistribution(generator) < 0.5) tZ *= -1.0;
     
     XYZ s(sX, sY, sZ);
     XYZ t(tX, tY, tZ);
