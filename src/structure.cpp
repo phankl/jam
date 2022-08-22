@@ -17,15 +17,45 @@ Structure::Structure(int seed, int nTube, int nSegment, double rTube, double lTu
   segment(nSegment);
 }
 
-vector<double> Structure::odf(int nBins) {
+vector<double> Structure::odf2D(int nBins, XYZ axis, XYZ normal) {
   
   vector<double> result(nBins, 0.0);
   double pi = 4 * atan(1);
   double binSize = pi / nBins;
 
+  axis.normalise();
+  normal.normalise();
+
   for (int i = 0; i < nTube; i++) {
     XYZ t = tubes[i].t;
-    double angle = acos(t.z / t.length());
+    t = t - (t * normal) * normal;
+    t.normalise();
+    double angle = acos(t * axis);
+    int bin = floor(angle / binSize);
+    result[bin] += 1.0;
+  }
+
+  double sum = 0.0;
+  for (int i = 0; i < nBins; i++)
+    sum += result[i] * binSize;
+
+  for (int i = 0; i < nBins; i++)
+    result[i] /= sum;
+
+  return result;
+}
+
+vector<double> Structure::odf3D(int nBins, XYZ axis) {
+  
+  vector<double> result(nBins, 0.0);
+  double pi = 4 * atan(1);
+  double binSize = pi / nBins;
+
+  axis.normalise();
+
+  for (int i = 0; i < nTube; i++) {
+    XYZ t = tubes[i].t;
+    double angle = acos(t * axis);
     int bin = floor(angle / binSize);
     result[bin] += 1.0;
   }

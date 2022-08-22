@@ -10,6 +10,7 @@ class StructureFilm : public Structure {
   public:
 
     StructureFilm(int, int, int, double, double, double, double, XYZ, XYZ, XYZ);
+    StructureFilm(int, int, int, double, double, double, double, XYZ, double, double);
 
     void printDataFile(string) override;
     void printInputFile(int, double, string) override;
@@ -23,6 +24,7 @@ class StructureFilm : public Structure {
     double bucklingAngle;
 
     void generate(int) override;
+    void generateGaussian(int);
 };
 
 #endif

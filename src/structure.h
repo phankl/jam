@@ -20,7 +20,8 @@ class Structure {
    
     Structure(int, int, int, double, double, double, double, XYZ, XYZ, XYZ);
     
-    vector<double> odf(int);
+    vector<double> odf2D(int, XYZ, XYZ);
+    vector<double> odf3D(int, XYZ);
 
     virtual void printDataFile(string) = 0;
     virtual void printInputFile(int, double, string) = 0;

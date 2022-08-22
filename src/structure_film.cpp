@@ -12,6 +12,18 @@ StructureFilm::StructureFilm(int seed, int nTube, int nSegment, double rTube, do
   segment(nSegment);
 }
 
+StructureFilm::StructureFilm(int seed, int nTube, int nSegment, double rTube, double lTube, double mTube, double skin, XYZ boxSize, double xySigma, double zRange):
+  Structure(seed, 0, nSegment, rTube, lTube, mTube, skin, boxSize, XYZ(), XYZ(xySigma, xySigma, zRange)),
+  stiffnessBond(0.5 * (86.64 + 100.56*rTube) / lSegment),
+  stiffnessHarmonic(0.5 * 63.80 * pow(rTube, 2.93) / lSegment),
+  stiffnessBuckling(0.7 * 63.80 * pow(rTube, 2.93) / 275.0),
+  bucklingAngle(45.0 * atan(lSegment/275.0) / atan(1))
+{
+  this->nTube = nTube;
+  generateGaussian(seed);
+  segment(nSegment);
+}
+
 void StructureFilm::printDataFile(string fileName) {
   ofstream file(fileName);
 
@@ -153,6 +165,97 @@ void StructureFilm::generate(int seed) {
   
     double tX = tDistributionX(generator);
     double tY = tDistributionY(generator);
+
+    double angleRadians = angleDistribution(generator) * deg2rad;
+    double tZ = tan(angleRadians) * sqrt(tX*tX + tY*tY);
+ 
+    XYZ s(sX, sY, sZ);
+    XYZ t(tX, tY, tZ);
+
+    t.normalise();
+    
+    Tube tube(rTube, lTube, s, t);
+    
+    // check periodic boundary conditions and create image tubes if necessary
+
+    XYZ e = s + lTube*t;
+    XYZ sTemp = s;
+
+    // image flags
+
+    vector<int> ixs(1, 0);
+    vector<int> iys(1, 0);
+
+    if (e.x < rTube+skin) ixs = {0, 1};
+    else if (e.x > boxSize.x-rTube-skin) ixs = {0, -1};
+    if (e.y < rTube+skin) iys = {0, 1};
+    else if (e.y > boxSize.y-rTube-skin) iys = {0, -1};
+
+    // generate ghost tubes
+
+    vector<Tube> ghosts;
+    for (auto ix: ixs) {
+      sTemp.x = s.x + ix*boxSize.x;
+      for (auto iy: iys) {
+        sTemp.y = s.y + iy*boxSize.y;
+        ghosts.push_back(Tube(rTube, lTube, sTemp, t));
+      }  
+    }
+
+    attempts++;
+
+    // add new tube if no overlap is detected
+
+    bool overlap = false;
+    for (auto ghost: ghosts) {
+      overlap = checkOverlap(ghost);
+      if (overlap) break;
+    }
+
+    if (!overlap) {
+      cout << "Tube " << tubeIndex << "/" << nTube << " generated after " << attempts << " attempts." << endl;
+      attempts = 0;
+      tubes.push_back(tube);
+      for (auto ghost: ghosts)
+        ghostTubes.push_back(ghost);
+      tubeIndex++;
+    }
+  }
+}
+
+void StructureFilm::generateGaussian(int seed) {
+
+  mt19937_64 generator(seed);
+  generator.discard(10000);
+  double pi = 4 * atan(1);
+  double deg2rad = pi / 180.0;
+
+  uniform_real_distribution<double> sDistribution(0.0, 1.0);
+  normal_distribution<double> tDistributionXY(mean.x, std.x);
+  discrete_distribution<int> signDistribution(-1, 1);
+  uniform_real_distribution<double> angleDistribution(mean.z - std.z, mean.z + std.z);
+
+  int attempts = 0;
+  int tubeIndex = 1;
+
+  while (tubes.size() < nTube) {
+    
+    // generate new tube
+
+    double sX = sDistribution(generator) * boxSize.x;
+    double sY = sDistribution(generator) * boxSize.y;
+    double sZ = sDistribution(generator) * boxSize.z;
+
+    double xyAngle;
+    do {
+      xyAngle = tDistributionXY(generator);
+    } while (xyAngle < 0.0 || xyAngle > 0.5 * pi);
+
+    int signX = signDistribution(generator);
+    int signY = signDistribution(generator);
+
+    double tX = signX * cos(xyAngle);
+    double tY = signY * sin(xyAngle);
 
     double angleRadians = angleDistribution(generator) * deg2rad;
     double tZ = tan(angleRadians) * sqrt(tX*tX + tY*tY);
